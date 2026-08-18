@@ -1,27 +1,29 @@
 import { useState } from "react";
 import { Plus, Trash2 } from "lucide-react";
 
+
 import type {
   Farm,
   PokemonCatch,
 } from "../types/tracker";
+
+import { pokemonList } from "../data/pokemon";
+import { PokemonAutocomplete } from "../components/PokemonAutocomplete";
 
 interface NewFarmProps {
   onSave: (farm: Farm) => void;
 }
 
 interface FormItem {
-  name: string;
+  pokemonId: string;
   quantity: string;
-  unitValue: string;
 }
 
 export function NewFarm({ onSave }: NewFarmProps) {
   const [items, setItems] = useState<FormItem[]>([
     {
-      name: "",
+      pokemonId: "",
       quantity: "",
-      unitValue: "",
     },
   ]);
 
@@ -34,9 +36,9 @@ export function NewFarm({ onSave }: NewFarmProps) {
       current.map((item, i) =>
         i === index
           ? {
-              ...item,
-              [field]: value,
-            }
+            ...item,
+            [field]: value,
+          }
           : item
       )
     );
@@ -46,9 +48,8 @@ export function NewFarm({ onSave }: NewFarmProps) {
     setItems((current) => [
       ...current,
       {
-        name: "",
+        pokemonId: "",
         quantity: "",
-        unitValue: "",
       },
     ]);
   }
@@ -65,20 +66,29 @@ export function NewFarm({ onSave }: NewFarmProps) {
     const catches: PokemonCatch[] = items
       .filter(
         (item) =>
-          item.name &&
-          Number(item.quantity) > 0 &&
-          Number(item.unitValue) > 0
+          item.pokemonId &&
+          Number(item.quantity) > 0
       )
       .map((item) => {
+        const pokemon = pokemonList.find(
+          (pokemon) =>
+            pokemon.id === item.pokemonId
+        );
+
+        if (!pokemon) {
+          throw new Error(
+            "Pokémon não encontrado"
+          );
+        }
+
         const quantity = Number(item.quantity);
-        const unitValue = Number(item.unitValue);
 
         return {
           id: crypto.randomUUID(),
-          name: item.name,
+          name: pokemon.name,
           quantity,
-          unitValue,
-          total: quantity * unitValue,
+          unitValue: pokemon.value,
+          total: quantity * pokemon.value,
         };
       });
 
@@ -100,18 +110,29 @@ export function NewFarm({ onSave }: NewFarmProps) {
 
     setItems([
       {
-        name: "",
+        pokemonId: "",
         quantity: "",
-        unitValue: "",
       },
     ]);
   }
 
   const total = items.reduce(
-    (sum, item) =>
-      sum +
-      Number(item.quantity || 0) *
-        Number(item.unitValue || 0),
+    (sum, item) => {
+      const pokemon = pokemonList.find(
+        (pokemon) =>
+          pokemon.id === item.pokemonId
+      );
+
+      if (!pokemon) {
+        return sum;
+      }
+
+      return (
+        sum +
+        Number(item.quantity || 0) *
+        pokemon.value
+      );
+    },
     0
   );
 
@@ -131,73 +152,96 @@ export function NewFarm({ onSave }: NewFarmProps) {
         onSubmit={handleSubmit}
         className="space-y-4"
       >
-        {items.map((item, index) => (
-          <div
-            key={index}
-            className="rounded-2xl bg-zinc-900 p-4"
-          >
-            <div className="mb-3 flex justify-between">
-              <span className="font-semibold">
-                Pokémon
-              </span>
+        {items.map((item, index) => {
+          const pokemon = pokemonList.find(
+            (pokemon) =>
+              pokemon.id === item.pokemonId
+          );
 
-              {items.length > 1 && (
-                <button
-                  type="button"
-                  onClick={() => removeItem(index)}
-                  className="text-red-400"
-                >
-                  <Trash2 size={18} />
-                </button>
-              )}
+          const itemTotal =
+            pokemon
+              ? Number(item.quantity || 0) *
+              pokemon.value
+              : 0;
+
+          return (
+            <div
+              key={index}
+              className="rounded-2xl bg-zinc-900 p-4"
+            >
+              <div className="mb-3 flex justify-between">
+                <span className="font-semibold">
+                  Pokémon
+                </span>
+
+                {items.length > 1 && (
+                  <button
+                    type="button"
+                    onClick={() =>
+                      removeItem(index)
+                    }
+                    className="text-red-400"
+                  >
+                    <Trash2 size={18} />
+                  </button>
+                )}
+              </div>
+
+              <div className="space-y-3">
+                <PokemonAutocomplete
+                  value={item.pokemonId}
+                  options={pokemonList}
+                  onChange={(pokemonId) =>
+                    updateItem(
+                      index,
+                      "pokemonId",
+                      pokemonId
+                    )
+                  }
+                />
+
+                {pokemon && (
+                  <div className="flex justify-between rounded-xl bg-zinc-800 px-4 py-3 text-sm">
+                    <span className="text-zinc-400">
+                      Valor por unidade
+                    </span>
+
+                    <span className="font-semibold">
+                      {pokemon.value} HDs
+                    </span>
+                  </div>
+                )}
+
+                <input
+                  type="number"
+                  min="1"
+                  value={item.quantity}
+                  onChange={(e) =>
+                    updateItem(
+                      index,
+                      "quantity",
+                      e.target.value
+                    )
+                  }
+                  placeholder="Quantidade"
+                  className="w-full rounded-xl bg-zinc-800 px-4 py-3 outline-none"
+                />
+
+                {itemTotal > 0 && (
+                  <div className="text-right text-sm text-zinc-400">
+                    Total:{" "}
+                    <span className="font-semibold text-white">
+                      {itemTotal.toLocaleString(
+                        "pt-BR"
+                      )}{" "}
+                      HDs
+                    </span>
+                  </div>
+                )}
+              </div>
             </div>
-
-            <div className="space-y-3">
-              <input
-                value={item.name}
-                onChange={(e) =>
-                  updateItem(
-                    index,
-                    "name",
-                    e.target.value
-                  )
-                }
-                placeholder="Ex: Croagunk"
-                className="w-full rounded-xl bg-zinc-800 px-4 py-3 outline-none"
-              />
-
-              <input
-                type="number"
-                min="1"
-                value={item.quantity}
-                onChange={(e) =>
-                  updateItem(
-                    index,
-                    "quantity",
-                    e.target.value
-                  )
-                }
-                placeholder="Quantidade"
-                className="w-full rounded-xl bg-zinc-800 px-4 py-3 outline-none"
-              />
-
-              <input
-                type="number"
-                min="1"
-                value={item.unitValue}
-                onChange={(e) =>
-                  updateItem(
-                    index,
-                    "unitValue",
-                    e.target.value
-                  )
-                }
-                placeholder="Valor por unidade em HDs"
-                className="w-full rounded-xl bg-zinc-800 px-4 py-3 outline-none"
-              />
-            </div>
-          </div>
-        ))}
+          );
+        })}
 
         <button
           type="button"
