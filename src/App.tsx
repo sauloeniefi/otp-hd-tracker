@@ -17,6 +17,7 @@ import { Goal } from "./pages/Goal";
 import { NewFarm } from "./pages/NewFarm";
 import { History } from "./pages/History";
 import { Reports } from "./pages/Reports";
+import { Pokemon } from "./pages/Pokemon";
 
 function App() {
   const [data, setData] = useState<TrackerData>(
@@ -67,27 +68,30 @@ function App() {
     switch (page) {
       case "goal":
         return (
-          <Goal
-            data={data}
-            onSave={saveGoal}
-          />
+            <Goal
+                data={data}
+                onSave={saveGoal}
+            />
         );
 
       case "new-farm":
         return (
-          <NewFarm onSave={addFarm} />
+            <NewFarm onSave={addFarm} />
         );
 
       case "history":
         return (
-          <History
-            farms={data.farms}
-            onDelete={deleteFarm}
-          />
+            <History
+                farms={data.farms}
+                onDelete={deleteFarm}
+            />
         );
 
       case "reports":
         return <Reports data={data} />;
+
+      case "pokemon":
+        return <Pokemon />;
 
       default:
         return <Dashboard data={data} />;
