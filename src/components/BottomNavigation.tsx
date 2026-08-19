@@ -4,6 +4,7 @@ import {
   Target,
   History,
   BarChart3,
+  PawPrint
 } from "lucide-react";
 
 export type Page =
@@ -11,7 +12,8 @@ export type Page =
   | "goal"
   | "new-farm"
   | "history"
-  | "reports";
+  | "reports"
+  | "pokemon";
 
 interface BottomNavigationProps {
   page: Page;
@@ -47,6 +49,11 @@ export function BottomNavigation({
       id: "reports" as const,
       label: "Relatório",
       icon: BarChart3,
+    },
+    {
+      id: "pokemon" as const,
+      label: "Pokémon",
+      icon: PawPrint,
     },
   ];
 

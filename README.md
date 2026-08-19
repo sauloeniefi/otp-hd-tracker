@@ -1,75 +1,174 @@
-# React + TypeScript + Vite
+# OT-Pokémon HD Tracker
 
-This template provides a minimal setup to get React working in Vite with HMR and some ESLint rules.
+Aplicação web para acompanhamento e gerenciamento de progresso no **OTPokémon**, permitindo organizar informações sobre Pokémon, progresso de captura e outros dados relacionados à jornada do jogador.
 
-Currently, two official plugins are available:
+O projeto está sendo desenvolvido com foco em uma interface simples, rápida e prática para facilitar o acompanhamento da coleção e do progresso dentro do jogo.
 
-- [@vitejs/plugin-react](https://github.com/vitejs/vite-plugin-react/blob/main/packages/plugin-react) uses [Oxc](https://oxc.rs)
-- [@vitejs/plugin-react-swc](https://github.com/vitejs/vite-plugin-react/blob/main/packages/plugin-react-swc) uses [SWC](https://swc.rs/)
+## 🎯 Objetivo
 
-## React Compiler
+O objetivo do **OT-Pokémon HD Tracker** é centralizar informações que normalmente precisam ser controladas manualmente pelo jogador, oferecendo uma ferramenta para:
 
-The React Compiler is not enabled on this template because of its impact on dev & build performances. To add it, see [this documentation](https://react.dev/learn/react-compiler/installation).
+* 📖 Consultar Pokémon disponíveis;
+* 🔎 Pesquisar Pokémon rapidamente;
+* 📝 Cadastrar e gerenciar Pokémon;
+* 📊 Acompanhar o progresso da coleção;
+* ✅ Marcar Pokémon conforme o progresso do jogador;
+* 🧩 Organizar informações relacionadas à jornada no OTPokémon.
 
-## Expanding the ESLint configuration
+## 🚀 Funcionalidades
 
-If you are developing a production application, we recommend updating the configuration to enable type-aware lint rules:
+### Pokémon
 
-```js
-export default defineConfig([
-  globalIgnores(['dist']),
-  {
-    files: ['**/*.{ts,tsx}'],
-    extends: [
-      // Other configs...
+* Cadastro de Pokémon;
+* Listagem de Pokémon;
+* Ordenação pela numeração da Pokédex;
+* Pesquisa de Pokémon;
+* Autocomplete durante a pesquisa;
+* Visualização das informações cadastradas;
+* Gerenciamento dos registros.
 
-      // Remove tseslint.configs.recommended and replace with this
-      tseslint.configs.recommendedTypeChecked,
-      // Alternatively, use this for stricter rules
-      tseslint.configs.strictTypeChecked,
-      // Optionally, add this for stylistic rules
-      tseslint.configs.stylisticTypeChecked,
+### Rastreamento de progresso
 
-      // Other configs...
-    ],
-    languageOptions: {
-      parserOptions: {
-        project: ['./tsconfig.node.json', './tsconfig.app.json'],
-        tsconfigRootDir: import.meta.dirname,
-      },
-      // other options...
-    },
-  },
-])
+O projeto também possui uma estrutura voltada para acompanhar o progresso do jogador, permitindo futuramente expandir o controle para diferentes objetivos e coleções.
 
+## 🛠️ Tecnologias
+
+O projeto utiliza tecnologias modernas do ecossistema web, incluindo:
+
+* **React**
+* **TypeScript**
+* **Vite**
+* **Lucide React**
+* **ESLint**
+* **CSS**
+
+## 📁 Estrutura do projeto
+
+A estrutura pode ser organizada aproximadamente da seguinte maneira:
+
+```text
+otp-hd-tracker/
+├── src/
+│   ├── components/
+│   ├── pages/
+│   ├── data/
+│   ├── types/
+│   ├── hooks/
+│   └── ...
+├── public/
+├── package.json
+├── tsconfig.json
+├── vite.config.ts
+└── README.md
 ```
 
-You can also install [eslint-plugin-react-x](https://github.com/Rel1cx/eslint-react/tree/main/packages/plugins/eslint-plugin-react-x) and [eslint-plugin-react-dom](https://github.com/Rel1cx/eslint-react/tree/main/packages/plugins/eslint-plugin-react-dom) for React-specific lint rules:
+## 💻 Instalação
 
-```js
-// eslint.config.js
-import reactX from 'eslint-plugin-react-x'
-import reactDom from 'eslint-plugin-react-dom'
+### Pré-requisitos
 
-export default defineConfig([
-  globalIgnores(['dist']),
-  {
-    files: ['**/*.{ts,tsx}'],
-    extends: [
-      // Other configs...
-      // Enable lint rules for React
-      reactX.configs['recommended-typescript'],
-      // Enable lint rules for React DOM
-      reactDom.configs.recommended,
-    ],
-    languageOptions: {
-      parserOptions: {
-        project: ['./tsconfig.node.json', './tsconfig.app.json'],
-        tsconfigRootDir: import.meta.dirname,
-      },
-      // other options...
-    },
-  },
-])
+Antes de começar, certifique-se de ter instalado:
 
+* [Node.js](https://nodejs.org/)
+* npm
+
+### Clone o projeto
+
+```bash
+git clone <URL_DO_REPOSITORIO>
+cd otp-hd-tracker
 ```
+
+### Instale as dependências
+
+```bash
+npm install
+```
+
+### Execute em ambiente de desenvolvimento
+
+```bash
+npm run dev
+```
+
+A aplicação estará disponível na URL apresentada pelo Vite, normalmente:
+
+```text
+http://localhost:5173
+```
+
+## 📦 Build
+
+Para gerar a versão de produção:
+
+```bash
+npm run build
+```
+
+Para visualizar o build localmente:
+
+```bash
+npm run preview
+```
+
+## 🧹 Lint
+
+Para verificar problemas no código:
+
+```bash
+npm run lint
+```
+
+## 🗺️ Roadmap
+
+Algumas ideias para evolução do projeto:
+
+* [ ] Persistência dos dados;
+* [ ] Sistema de autenticação;
+* [ ] Perfil do jogador;
+* [ ] Controle de Pokémon capturados;
+* [ ] Controle de Pokémon faltantes;
+* [ ] Progresso por região/geração;
+* [ ] Filtros avançados;
+* [ ] Estatísticas da coleção;
+* [ ] Importação e exportação dos dados;
+* [ ] Responsividade aprimorada para dispositivos móveis;
+* [ ] Deploy da aplicação;
+* [ ] Integração com outras informações do OTPokémon.
+
+## 🤝 Contribuição
+
+Contribuições são bem-vindas.
+
+Para contribuir:
+
+1. Faça um fork do projeto;
+2. Crie uma branch para sua alteração:
+
+```bash
+git checkout -b feature/minha-feature
+```
+
+3. Faça suas alterações;
+4. Commit:
+
+```bash
+git commit -m "feat: adiciona minha feature"
+```
+
+5. Envie a branch:
+
+```bash
+git push origin feature/minha-feature
+```
+
+6. Abra um Pull Request.
+
+## 📄 Licença
+
+Este projeto é desenvolvido para fins pessoais e de estudo.
+
+O **OT-Pokémon** e suas respectivas marcas, imagens e conteúdos pertencem aos seus respectivos proprietários. Este projeto não possui vínculo oficial com o OTPokémon.
+
+---
+
+**OT-Pokémon HD Tracker** — acompanhando sua jornada, Pokémon por Pokémon. 🎮

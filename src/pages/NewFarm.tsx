@@ -1,13 +1,21 @@
-import { useState } from "react";
+import { useEffect, useState } from "react";
+
 import { Plus, Trash2 } from "lucide-react";
 
+import type {
+  Pokemon,
+  PokemonFarmConfig,
+} from "../types/pokemon";
+
+import { pokemonList } from "../data/pokemon";
+
+import { getPokemonList } from "../services/pokemonStorage";
 
 import type {
   Farm,
   PokemonCatch,
 } from "../types/tracker";
 
-import { pokemonList } from "../data/pokemon";
 import { PokemonAutocomplete } from "../components/PokemonAutocomplete";
 
 interface NewFarmProps {
@@ -19,28 +27,38 @@ interface FormItem {
   quantity: string;
 }
 
-export function NewFarm({ onSave }: NewFarmProps) {
-  const [items, setItems] = useState<FormItem[]>([
-    {
-      pokemonId: "",
-      quantity: "",
-    },
-  ]);
+export function NewFarm({
+                          onSave,
+                        }: NewFarmProps) {
+  const [pokemonConfigs, setPokemonConfigs] =
+      useState<PokemonFarmConfig[]>([]);
+
+  const [items, setItems] =
+      useState<FormItem[]>([
+        {
+          pokemonId: "",
+          quantity: "",
+        },
+      ]);
+
+  useEffect(() => {
+    setPokemonConfigs(getPokemonList());
+  }, []);
 
   function updateItem(
-    index: number,
-    field: keyof FormItem,
-    value: string
+      index: number,
+      field: keyof FormItem,
+      value: string
   ) {
     setItems((current) =>
-      current.map((item, i) =>
-        i === index
-          ? {
-            ...item,
-            [field]: value,
-          }
-          : item
-      )
+        current.map((item, i) =>
+            i === index
+                ? {
+                  ...item,
+                  [field]: value,
+                }
+                : item
+        )
     );
   }
 
@@ -56,41 +74,68 @@ export function NewFarm({ onSave }: NewFarmProps) {
 
   function removeItem(index: number) {
     setItems((current) =>
-      current.filter((_, i) => i !== index)
+        current.filter((_, i) => i !== index)
     );
   }
 
-  function handleSubmit(e: React.FormEvent) {
+  function getPokemonConfig(
+      pokemonId: string
+  ): PokemonFarmConfig | undefined {
+    return pokemonConfigs.find(
+        (config) =>
+            config.pokemonId === Number(pokemonId)
+    );
+  }
+
+  function getPokemon(
+      pokemonId: string
+  ): Pokemon | undefined {
+    return pokemonList.find(
+        (pokemon) =>
+            pokemon.id === Number(pokemonId)
+    );
+  }
+
+  function handleSubmit(
+      e: React.FormEvent
+  ) {
     e.preventDefault();
 
-    const catches: PokemonCatch[] = items
-      .filter(
-        (item) =>
-          item.pokemonId &&
-          Number(item.quantity) > 0
-      )
-      .map((item) => {
-        const pokemon = pokemonList.find(
-          (pokemon) =>
-            pokemon.id === item.pokemonId
-        );
+    const catches: PokemonCatch[] =
+        items
+            .filter(
+                (item) =>
+                    item.pokemonId &&
+                    Number(item.quantity) > 0
+            )
+            .map((item) => {
+              const pokemon = getPokemon(
+                  item.pokemonId
+              );
 
-        if (!pokemon) {
-          throw new Error(
-            "Pokémon não encontrado"
-          );
-        }
+              const config =
+                  getPokemonConfig(
+                      item.pokemonId
+                  );
 
-        const quantity = Number(item.quantity);
+              if (!pokemon || !config) {
+                throw new Error(
+                    "Pokémon não encontrado ou não configurado"
+                );
+              }
 
-        return {
-          id: crypto.randomUUID(),
-          name: pokemon.name,
-          quantity,
-          unitValue: pokemon.value,
-          total: quantity * pokemon.value,
-        };
-      });
+              const quantity =
+                  Number(item.quantity);
+
+              return {
+                id: crypto.randomUUID(),
+                name: pokemon.name,
+                quantity,
+                unitValue: config.value,
+                total:
+                    quantity * config.value,
+              };
+            });
 
     if (catches.length === 0) {
       return;
@@ -101,8 +146,9 @@ export function NewFarm({ onSave }: NewFarmProps) {
       date: new Date().toISOString(),
       catches,
       total: catches.reduce(
-        (sum, item) => sum + item.total,
-        0
+          (sum, item) =>
+              sum + item.total,
+          0
       ),
     };
 
@@ -117,158 +163,179 @@ export function NewFarm({ onSave }: NewFarmProps) {
   }
 
   const total = items.reduce(
-    (sum, item) => {
-      const pokemon = pokemonList.find(
-        (pokemon) =>
-          pokemon.id === item.pokemonId
-      );
+      (sum, item) => {
+        const config =
+            getPokemonConfig(
+                item.pokemonId
+            );
 
-      if (!pokemon) {
-        return sum;
-      }
+        if (!config) {
+          return sum;
+        }
 
-      return (
-        sum +
-        Number(item.quantity || 0) *
-        pokemon.value
-      );
-    },
-    0
+        return (
+            sum +
+            Number(item.quantity || 0) *
+            config.value
+        );
+      },
+      0
   );
 
   return (
-    <div className="mx-auto max-w-lg space-y-6">
-      <header>
-        <p className="text-sm text-zinc-400">
-          Nova entrada
-        </p>
+      <div className="mx-auto max-w-lg space-y-6">
+        <header>
+          <p className="text-sm text-zinc-400">
+            Nova entrada
+          </p>
 
-        <h1 className="text-3xl font-bold">
-          Registrar Farm
-        </h1>
-      </header>
+          <h1 className="text-3xl font-bold">
+            Registrar Farm
+          </h1>
+        </header>
 
-      <form
-        onSubmit={handleSubmit}
-        className="space-y-4"
-      >
-        {items.map((item, index) => {
-          const pokemon = pokemonList.find(
-            (pokemon) =>
-              pokemon.id === item.pokemonId
-          );
+        <form
+            onSubmit={handleSubmit}
+            className="space-y-4"
+        >
+          {items.map((item, index) => {
+            const pokemon = getPokemon(
+                item.pokemonId
+            );
 
-          const itemTotal =
-            pokemon
-              ? Number(item.quantity || 0) *
-              pokemon.value
-              : 0;
+            const config =
+                getPokemonConfig(
+                    item.pokemonId
+                );
 
-          return (
-            <div
-              key={index}
-              className="rounded-2xl bg-zinc-900 p-4"
-            >
-              <div className="mb-3 flex justify-between">
+            const itemTotal =
+                pokemon && config
+                    ? Number(
+                    item.quantity || 0
+                ) * config.value
+                    : 0;
+
+            return (
+                <div
+                    key={index}
+                    className="rounded-2xl bg-zinc-900 p-4"
+                >
+                  <div className="mb-3 flex justify-between">
                 <span className="font-semibold">
                   Pokémon
                 </span>
 
-                {items.length > 1 && (
-                  <button
-                    type="button"
-                    onClick={() =>
-                      removeItem(index)
-                    }
-                    className="text-red-400"
-                  >
-                    <Trash2 size={18} />
-                  </button>
-                )}
-              </div>
-
-              <div className="space-y-3">
-                <PokemonAutocomplete
-                  value={item.pokemonId}
-                  options={pokemonList}
-                  onChange={(pokemonId) =>
-                    updateItem(
-                      index,
-                      "pokemonId",
-                      pokemonId
-                    )
-                  }
-                />
-
-                {pokemon && (
-                  <div className="flex justify-between rounded-xl bg-zinc-800 px-4 py-3 text-sm">
-                    <span className="text-zinc-400">
-                      Valor por unidade
-                    </span>
-
-                    <span className="font-semibold">
-                      {pokemon.value} HDs
-                    </span>
+                    {items.length > 1 && (
+                        <button
+                            type="button"
+                            onClick={() =>
+                                removeItem(index)
+                            }
+                            className="text-red-400"
+                        >
+                          <Trash2 size={18} />
+                        </button>
+                    )}
                   </div>
-                )}
 
-                <input
-                  type="number"
-                  min="1"
-                  value={item.quantity}
-                  onChange={(e) =>
-                    updateItem(
-                      index,
-                      "quantity",
-                      e.target.value
-                    )
-                  }
-                  placeholder="Quantidade"
-                  className="w-full rounded-xl bg-zinc-800 px-4 py-3 outline-none"
-                />
+                  <div className="space-y-3">
+                    <PokemonAutocomplete
+                        value={
+                          item.pokemonId
+                        }
+                        options={pokemonList}
+                        configs={
+                          pokemonConfigs
+                        }
+                        onChange={(
+                            pokemonId
+                        ) =>
+                            updateItem(
+                                index,
+                                "pokemonId",
+                                pokemonId
+                            )
+                        }
+                    />
 
-                {itemTotal > 0 && (
-                  <div className="text-right text-sm text-zinc-400">
-                    Total:{" "}
-                    <span className="font-semibold text-white">
+                    {pokemon &&
+                        config && (
+                            <div className="flex justify-between rounded-xl bg-zinc-800 px-4 py-3 text-sm">
+                      <span className="text-zinc-400">
+                        Valor por unidade
+                      </span>
+
+                              <span className="font-semibold">
+                        {config.value.toLocaleString(
+                            "pt-BR"
+                        )}{" "}
+                                HDs
+                      </span>
+                            </div>
+                        )}
+
+                    <input
+                        type="number"
+                        min="1"
+                        value={
+                          item.quantity
+                        }
+                        onChange={(e) =>
+                            updateItem(
+                                index,
+                                "quantity",
+                                e.target.value
+                            )
+                        }
+                        placeholder="Quantidade"
+                        className="w-full rounded-xl bg-zinc-800 px-4 py-3 outline-none"
+                    />
+
+                    {itemTotal > 0 && (
+                        <div className="text-right text-sm text-zinc-400">
+                          Total:{" "}
+                          <span className="font-semibold text-white">
                       {itemTotal.toLocaleString(
-                        "pt-BR"
+                          "pt-BR"
                       )}{" "}
-                      HDs
+                            HDs
                     </span>
+                        </div>
+                    )}
                   </div>
-                )}
-              </div>
-            </div>
-          );
-        })}
+                </div>
+            );
+          })}
 
-        <button
-          type="button"
-          onClick={addItem}
-          className="flex w-full items-center justify-center gap-2 rounded-2xl border border-zinc-800 py-4"
-        >
-          <Plus size={20} />
-          Adicionar Pokémon
-        </button>
+          <button
+              type="button"
+              onClick={addItem}
+              className="flex w-full items-center justify-center gap-2 rounded-2xl border border-zinc-800 py-4"
+          >
+            <Plus size={20} />
+            Adicionar Pokémon
+          </button>
 
-        <div className="rounded-2xl bg-violet-600 p-5">
-          <p className="text-sm text-violet-200">
-            Total da farm
-          </p>
+          <div className="rounded-2xl bg-violet-600 p-5">
+            <p className="text-sm text-violet-200">
+              Total da farm
+            </p>
 
-          <p className="text-3xl font-bold">
-            {total.toLocaleString("pt-BR")} HDs
-          </p>
-        </div>
+            <p className="text-3xl font-bold">
+              {total.toLocaleString(
+                  "pt-BR"
+              )}{" "}
+              HDs
+            </p>
+          </div>
 
-        <button
-          type="submit"
-          className="w-full rounded-2xl bg-white py-4 font-bold text-black"
-        >
-          Salvar Farm
-        </button>
-      </form>
-    </div>
+          <button
+              type="submit"
+              className="w-full rounded-2xl bg-white py-4 font-bold text-black"
+          >
+            Salvar Farm
+          </button>
+        </form>
+      </div>
   );
 }
